@@ -1,0 +1,787 @@
+<template>
+    <div class="container">
+
+        <!-- SIDEBAR -->
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+
+            <!-- AVATAR -->
+            <div class="profile-avatar" onclick={handleAvatarClick} style={avatarStyle}>
+                <span>{avatarInitial}</span>
+            </div>
+
+            <p class="avatar-name">{avatarName}</p>
+
+            <!-- VIEW AS DROPDOWN -->
+            <div class="view-as-section">
+                <label class="view-as-label">View As</label>
+                <select class="view-as-select" value={selectedViewAs} onchange={handleViewAsChange}>
+                    <option value="00590000001DDBbAAO" selected>CRM Mail</option>
+                    <option value="00590000002HXJNAA4" >Shreyash</option>                    
+                </select>
+            </div>
+
+            <hr class="sidebar-divider" />
+
+            <div class="logo">📧 SF Inbox</div>
+
+            <div class={inboxClass} data-tab="inbox" onclick={handleMenuClick}>Inbox</div>
+            <div class={archiveClass} data-tab="archive" onclick={handleMenuClick}>Archive</div>
+            <div class={sentClass} data-tab="sent" onclick={handleMenuClick}>Sent</div>
+            <div class={trashClass} data-tab="trash" onclick={handleMenuClick}>Trash</div>
+        </div>
+
+
+
+        <!-- MAIN SECTION -->
+        <div class="main">
+
+            <!-- HEADER -->
+            <div class="header">
+                <input type="text"
+                       placeholder="Search mail..."
+                       class="search"
+                       onkeyup={handleSearch}/>
+
+                <div class="header-actions">
+                    <button class="compose-btn" onclick={openArchiveModal}>
+                        ⚙️ Archive/Unarchived</button>
+                    <button class="compose-btn" onclick={handleCompose}>+ Compose</button>
+                    <button class="compose-btn" onclick={handleRefresh}>+ Refresh</button>                  
+                </div>
+            </div>
+
+
+            <template if:true={showCompose}>
+                <div class={composeModalClass}>
+                    <div class="compose-box">
+
+                        <div class="compose-header">
+                            <span>New Message</span>
+                            <div class="header-icons">
+
+                                <!-- MINIMIZE -->
+                                <template if:false={isMinimized}>
+                                    <span class="icon-btn" title="Minimize" onclick={toggleMinimize}>&#8213;</span>
+                                </template>
+
+                                <!-- RESTORE (shown only when minimized) -->
+                                <template if:true={isMinimized}>
+                                    <span class="icon-btn" title="Restore" onclick={toggleMinimize}>&#9723;</span>
+                                </template>
+
+                                <!-- MAXIMIZE (opens big modal child component) -->
+                                <span class="icon-btn" title="Maximize" onclick={openMaximized}>&#10064;</span>
+
+                                <!-- CLOSE -->
+                                <span class="close" onclick={closeCompose}>✖</span>
+
+                            </div>
+                        </div>
+
+                        <!-- BODY — hidden when minimized -->
+                        <template if:false={isMinimized}>
+
+                            <input type="text" placeholder="To"
+                                value={composeData.to}
+                                data-field="to"
+                                onchange={handleInput}/>
+
+                            <div class="cc-bcc-row">
+                                <input type="text" placeholder="CC"
+                                    value={composeData.cc}
+                                    data-field="cc"
+                                    onchange={handleInput}/>
+                                <input type="text" placeholder="BCC"
+                                    value={composeData.bcc}
+                                    data-field="bcc"
+                                    onchange={handleInput}/>
+                            </div>
+
+                            <input type="text" placeholder="Subject"
+                                value={composeData.subject}
+                                data-field="subject"
+                                onchange={handleInput}/>
+
+                            <div class="compose-body">
+                                <lightning-input-rich-text class="custom-editor" value={composeData.body}
+                                    placeholder="Body" data-field="body" onchange={handleInput}
+                                    formats="font,size,bold,italic,underline,strike,list,indent,align,link,image,clean">
+                                </lightning-input-rich-text>
+                             </div>
+                                <div class="slds-p-top_small attachment">
+                                    <h4 class="slds-text-heading_small slds-p-bottom_x-small">Attachments</h4>
+                                    <div class="slds-box slds-box_x-small" style="border: 0.5px solid #ccc;">
+                                        <div class="slds-m-top_xx-small slds-p-bottom_x-small">
+                                            <ul class="slds-list_horizontal slds-wrap">
+                                                <template for:each={fileUpload} for:item="file" for:index="index">
+                                                    <li key={file.name} class="pill-wrapper">
+                                                        <lightning-pill label={file.name} title={file.name}
+                                                            data-index={index} onremove={removeFile}>
+                                                            <lightning-icon icon-name={file.icon}></lightning-icon>
+                                                        </lightning-pill>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        <input type="file" multiple onchange={handleFileChange}></input>
+                                    </div>
+                                    <div class="slds-p-top_xxx-small" style="color:red;font-size:12px;">
+                                        <p>* Maximum 5 files allowed.</p>
+                                    </div>
+                                </div>
+                           
+
+                            <div class="compose-footer">
+                                <button class="send-btn" onclick={handleSend}>Send</button>
+                            </div>
+
+                        </template>
+
+                    </div>
+                </div>
+            </template>
+
+
+            <!-- MAXIMIZED CHILD COMPONENT — full screen big modal -->
+            <template if:true={showMaximized}>
+                <c-compose-maximized compose-data={composeData} file-upload={fileUpload} onclose={handleMaximizedClose}
+                    onsend={handleMaximizedSend} onfilechange={handleMaximizedFileChange}
+                    onremovefile={handleMaximizedRemoveFile} oninputchange={handleMaximizedInput}>
+                </c-compose-maximized>
+            </template>
+
+            <div class="content">
+
+                <!-- EMAIL LIST -->
+                <div class="list" onscroll={handleListScroll}>
+                    <template for:each={emails} for:item="mail">
+                        <div key={mail.id} class={mail.className} data-id={mail.id} onclick={handleSelect}>
+
+                            <div class="avatar" style={mail.avatarStyle}>
+                                {mail.initial}
+                            </div>
+
+                            <div class="mail-info">
+                                <div class="top">
+                                    <span class="name {mail.unread ? 'unread' : ''}">
+                                     <b>  {mail.subject}</b>
+                                    </span>
+                                    <span class="time">{mail.time}</span>
+                                </div>
+
+                                <div class="subject {mail.unread ? 'unread' : ''}">
+                                    
+                                    {mail.name}
+                                </div>
+
+                                <template if:false={isTrashTab}>
+                                    <div class="preview-row">
+                                        <div class="preview">{mail.preview}</div>
+                                        <span class="delete-icon"
+                                            data-id={mail.id} data-action="delete"
+                                            onclick={handleDeleteEmail}>
+                                            <lightning-icon
+                                                icon-name="utility:delete" variant='error'
+                                                size="xx-small"
+                                                alternative-text="Delete">
+                                            </lightning-icon>
+                                        </span>
+                                    </div>
+                                </template>
+
+                                <template if:true={isTrashTab}>
+                                    <div class="preview-row">
+                                        <div class="preview">{mail.preview}</div>
+                                        <span class="delete-icon"
+                                            data-id={mail.id} data-action="undelete"
+                                            onclick={handleDeleteEmail}>
+                                            <lightning-icon
+                                                icon-name="utility:undelete" variant='error'
+                                                size="x-small"
+                                                alternative-text="Restore">
+                                            </lightning-icon>
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="dot" if:true={mail.unread}></div>
+                        </div>
+                    </template>
+
+                     <template if:true={isLoadingThreads}>
+                        <div class="loader-container">
+                            <div class="custom-loader"></div>
+                            <div class="loader-text">Hold on!! Loading emails...</div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- EMAIL VIEW -->
+                <div class="viewer" onscroll={handleThreadScroll}>
+                    <template if:true={selectedEmail}>
+
+                        <!-- SUBJECT -->
+                        <div class="subject-header">
+                            {selectedEmail.subject}
+                        </div>            
+
+                        <!-- THREAD -->
+                        <div class="thread">
+
+                            <template for:each={selectedEmail.thread} for:item="msg">
+                                <div key={msg.id} class="message-card">
+
+                                    <!-- HEADER -->
+                                    <div class="msg-header">
+
+                                        <!-- LEFT -->
+                                        <!-- LEFT (CLEAN EMAIL STYLE) -->
+                                        <div class="msg-left">
+                                            <div>
+                                                <div>
+                                                    <span class="sender">{msg.sender}</span>
+                                                    <span class="time"> • {msg.time}</span>
+                                                </div>
+
+                                                <div class="to-line">
+                                                    <div class="row">
+                                                        <span class="label">To:</span>
+                                                        <span class="value">{msg.to}</span>
+                                                    </div>
+
+                                                    <template if:true={msg.cc}>
+                                                        <div class="row">
+                                                            <span class="label">CC:</span>
+                                                            <span class="value">{msg.cc}</span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="msg-actions">
+                                            <template if:false={isTrashTab}>
+                                                <span class="action-link" data-id={msg.id} onclick={handleReply}>Reply</span>
+                                                <span class="action-link" data-type="Case" data-id={msg.id} onclick={handleAction}>Case</span>
+                                                <span class="action-link" data-type="Opportunity" data-id={msg.id} onclick={handleAction}>Opportunity</span>
+                                                <span class="action-link" data-type="Task"  data-id={msg.id} onclick={handleAction}>Task</span>
+
+                                                <span class="action-link" data-type="Task"  data-id={msg.id} onclick={handleOppBridge}>OppBridge</span>                                               
+
+                                                
+                                                                                                     
+                                                <!--div class="ai-badge-wrap">
+                                                    <span class="ai-badge" data-id={msg.id} onclick={handleAISummarise}>
+                                                        <span class="ai-dot"></span>
+                                                        AI Summarise
+                                                    </span>
+                                                </div-->
+
+                                            </template>
+
+                                            <!--template if:true={isTrashTab}>
+                                                    <span class="action-link"  data-id={msg.id} onclick={handleRestore}>Restore</span>
+                                                </template-->
+                                        </div>
+                                        <!-- RIGHT ACTIONS -->
+                                    </div>
+
+
+                                    <div class="icon-row">
+
+                                        <!-- LEFT SIDE (O, C, T, Link) -->
+                                        <div class="icon-left">
+                                            <template if:true={msg.isOpportunity}>
+                                                <div class="custom-box opportunity">O</div>
+                                            </template>
+                                            <template if:true={msg.isCase}>
+                                                <div class="custom-box case">C</div>
+                                            </template>
+                                            <template if:true={msg.isTask}>
+                                                <div class="custom-box task">T</div>
+                                            </template>
+                                            <template if:true={msg.isOpportunityLinked}>
+                                                <div class="custom-box link" data-id={msg.id} onclick={handleShowLinkOpp}>⚓</div>
+                                            </template>
+                                        </div>
+
+                                        <!-- RIGHT SIDE (AI Actions) -->
+                                        <div class="icon-right">
+
+                                            <!-- 🔄 SHOW LOADER WHEN PROCESSING -->
+                                            <template if:true={isAnyAIProcessing}>
+                                                <div class="ai-loading">
+                                                    <span class="ai-spinner"></span>
+                                                    <span class="ai-loading-text">{loadingText}</span>
+                                                </div>
+                                            </template>
+
+                                            <!-- ✅ SHOW BUTTONS WHEN NOT PROCESSING -->
+                                            <template if:false={isAnyAIProcessing}>
+
+                                                <div class="ai-badge-wrap">
+                                                    <span class="ai-badge" 
+                                                        data-id={msg.id} 
+                                                        onclick={handleAISummarise}>
+                                                        <!--span class="ai-dot"></span-->
+                                                        AI Summarise
+                                                    </span>
+                                                </div>  
+
+                                                <span class="ai-action" 
+                                                    onclick={handleAIReply} 
+                                                    data-id={msg.id}>
+                                                    🤖 AI Reply
+                                                </span>
+
+                                                <span class="ai-action" 
+                                                    onclick={handleAIPromptReply} 
+                                                    data-id={msg.id}>
+                                                    ✍️ Prompt Reply
+                                                </span>
+
+                                            </template>
+
+                                        </div>
+
+                                    </div>
+
+                                    
+
+                                    <div class="msg-body">
+                                        <lightning-formatted-rich-text value={msg.body}>
+                                        </lightning-formatted-rich-text>
+                                    </div>
+
+
+                                  
+                                    <!-- ATTACHMENTS -->
+                                    <template if:true={msg.attachments.length}>
+                                        <h4 style="margin-top:15px;"><b><u>Attachments:</u></b></h4>
+                                        <div class="attachment-grid">
+
+                                            <template for:each={msg.attachments} for:item="file">
+                                                <div key={file.id} class="file-box">
+
+                                                    <!-- PREVIEW AREA -->
+                                                    <div class="file-preview" data-id={file.id}
+                                                        onclick={showFilepreviewFile}>
+
+                                                        <!-- IMAGE -->
+                                                        <template if:true={file.isImage}>
+                                                            <template if:true={file.previewUrl}>
+                                                                <img src={file.previewUrl} class="thumb"/>
+                                                            </template>
+
+                                                            <template if:false={file.previewUrl}>
+                                                                <div class="file-icon">🖼️</div>
+                                                            </template>
+
+                                                        </template>
+
+                                                        <!-- PDF / OTHER -->
+                                                        <template if:false={file.isImage}>
+                                                            <div class="file-icon">📄</div>
+                                                        </template>
+
+                                                    </div>
+
+                                                    <!-- FILE NAME -->
+                                                    <div class="file-name">
+                                                        {file.name}
+                                                    </div>
+
+                                                    <!-- DOWNLOAD BUTTON -->
+                                                    <button class="download-btn"
+                                                            data-id={file.id}
+                                                            onclick={downloadFile}>
+                                                        Download
+                                                    </button>
+
+                                                </div>
+                                            </template>
+
+                                        </div>
+                                    </template>
+
+
+                                    <template if:true={msg.isReplyOpen}>
+                                        <div class="reply-box" data-id={msg.id}>
+
+                                            <input type="text"
+                                                value={replyData.to}
+                                                data-field="to"
+                                                onchange={handleReplyInput}
+                                                placeholder="To"/>
+
+                                            <input type="text"
+                                                value={replyData.cc}
+                                                data-field="cc"
+                                                onchange={handleReplyInput}
+                                                placeholder="CC"/>
+
+                                            <input type="text"
+                                                value={replyData.subject}
+                                                data-field="subject"
+                                                onchange={handleReplyInput}
+                                                placeholder="Subject"/>
+
+                                            <div class="editor-container">
+
+                                                <!-- Toolbar -->
+                                                <div class="toolbar">
+
+                                                    <!-- Font Size -->
+                                                    <select onchange={setFontSize}>
+                                                        <option value="1">Small</option>
+                                                        <option value="3" selected>Normal</option>
+                                                        <option value="5">Large</option>
+                                                    </select>
+
+                                                    <!-- Bold / Italic / Underline / Strike -->
+                                                    <button onclick={bold}>B</button>
+                                                    <button onclick={italic}>I</button>
+                                                    <button onclick={underline}>U</button>
+                                                    <button onclick={strike}>S</button>
+
+                                                    <!-- Lists -->
+                                                    <!--button onmousedown={preventBlur} onclick={unorderedList}>• List</button>
+                                                    <button onmousedown={preventBlur} onclick={orderedList}>1. List</button>
+
+                                                
+                                                    <button onclick={indent}>→</button>
+                                                    <button onclick={outdent}>←</button-->
+
+                                                    <!-- Align -->
+                                                    <button onclick={alignLeft}>Left</button>
+                                                    <button onclick={alignCenter}>Center</button>
+                                                    <button onclick={alignRight}>Right</button>
+
+                                                    <!-- Link -->
+                                                    <button onclick={addLink}>Link</button>
+
+                                                    <!-- Image -->
+                                                    <input type="file" accept="image/*" onchange={uploadImage} />
+                                                    <!-- Clear -->
+
+
+                                                </div>
+
+                                                <!-- Editable Area -->
+                                                <div class="editor" contenteditable="true" data-field="body" key={activeReplyId}
+                                                    oninput={handleReplyInput}>
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="slds-p-top_small attachment">
+                                                <h4 class="slds-text-heading_small slds-p-bottom_x-small">Attachments</h4>
+                                                <div class="slds-box slds-box_x-small" style="border: 0.5px solid #ccc;">
+                                                    <div class="slds-m-top_xx-small slds-p-bottom_x-small">
+                                                        <ul class="slds-list_horizontal slds-wrap">
+                                                            <template for:each={fileUpload} for:item="file" for:index="index">
+                                                                <li key={file.name} class="pill-wrapper">
+                                                                    <lightning-pill label={file.name} title={file.name}
+                                                                        data-index={index} onremove={removeFile}>
+                                                                        <lightning-icon icon-name={file.icon}></lightning-icon>
+                                                                    </lightning-pill>
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </div>
+                                                    <input type="file" multiple onchange={handleFileChange}></input>
+                                                </div>
+                                                <div class="slds-p-top_xxx-small" style="color:red;font-size:12px;">
+                                                    <p>* Maximum 5 files allowed.</p>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="reply-footer">
+
+                                                <!-- LEFT SIDE -->
+                                                <div class="reply-left-actions">
+
+                                                    <!-- 🗑️ DELETE -->
+                                                    <button class="delete-btn" onclick={handleReplyDelete}>🗑️</button>
+
+                                                    <!-- 📄 TEMPLATE DROPDOWN -->
+                                                    <div class="template-dropdown">
+                                                        <select onchange={handleTemplateChange}>
+                                                            <option value="">Add Template</option>
+
+                                                            <template for:each={templateOptions} for:item="temp">
+                                                                <option key={temp.value} value={temp.value}>
+                                                                    {temp.label}
+                                                                </option>
+                                                            </template>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- RIGHT SIDE -->
+                                                <button class="send-btn"
+                                                        onclick={sendReply}
+                                                        disabled={isSendingReply}>
+                                                    <template if:true={isSendingReply}>
+                                                        Sending...
+                                                    </template>
+                                                    <template if:false={isSendingReply}>
+                                                        Send
+                                                    </template>
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+                                    </template>
+
+                                </div>
+
+                            </template>
+                        </div>
+
+
+
+                    </template>
+
+                    <template if:true={isLoadingMessage}>
+                        <div class="msg-skeleton">
+                            <div class="bubble left"></div>
+                            <div class="bubble right"></div>
+                            <div class="bubble left"></div>
+                        </div>
+                    </template>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <template if:true={showPromptModal}>
+        <div class="modal-backdrop" onclick={handleClosePrompt}></div>
+
+        <div class="modal-container">
+            <div class="modal-header">
+                <span>✍️ AI Prompt Reply</span>
+                <span class="close-btn" onclick={handleClosePrompt}>✕</span>
+            </div>
+
+            <textarea 
+                class="modal-textarea"
+                placeholder="Type your instruction... (e.g. make it polite, short, formal)"
+                value={promptText}
+                oninput={handlePromptChange}>
+            </textarea>
+
+            <!-- Tone Toggle -->
+            <div class="tone-section">
+                <b><span class="tone-label">Tone</span></b>
+                <div class="tone-group">
+                    <template for:each={toneOptions} for:item="tone">
+                        <button 
+                            key={tone.value}
+                            class={tone.cssClass}
+                            data-tone={tone.value}
+                            onclick={handleToneChange}>
+                            {tone.label}
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick={handleClosePrompt}>Cancel</button>
+                <button class="btn-send" data-id={emailId} onclick={handleAIReply}>{promptSend}</button>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={showPopup}>
+    <c-action-popup is-open={showPopup} email-id={emailId} action-type={selectedAction} onclose={handleClosePopup}>
+    </c-action-popup>
+    </template>
+
+    <template if:true={showOppBridgeModal}>
+        <c-link-opportunity-modal is-open={showOppBridgeModal} table-type={type} email-id={selectedEmailId}
+            onclose={handleCloseOppBridge} onrefreshthread={handleRefreshThread}>
+        </c-link-opportunity-modal>
+    </template>
+
+    <c-ai-summary-panel
+        email-id={aiEmailId}
+        onsummarydone={handleSummaryDone}
+        is-open={showAIPanel}
+        onclose={handleAIPanelClose}
+        onquickaction={handleAIQuickAction} onreplyinemail={handleAIReplyInEmail}>
+    </c-ai-summary-panel>
+    
+
+    <template if:true={showArchiveModal}>
+    <div class="modal-backdrop" onclick={closeArchiveModal}></div>
+
+    <div class="archive-container">
+
+        <!-- HEADER -->
+        <div class="archive-header">
+            <span>Archive Rules</span>
+            <span class="archive-close" onclick={closeArchiveModal}>✕</span>
+        </div>
+
+        <!-- 🔥 TABS -->
+        <div class="archive-tabs">
+            <span class={addTabClass}
+                  data-tab="add"
+                  onclick={handleTabChange}>
+                Add Rule
+            </span>
+
+            <span class={manageTabClass}
+                  data-tab="manage"
+                  onclick={handleTabChange}>
+                Manage Rules
+                
+            </span>
+        </div>
+
+        <!-- ================= ADD RULE TAB ================= -->
+        <template if:true={isAddTab}>
+
+            <!-- ADD RULE -->
+           <div class="archive-add-wrapper">
+
+                <!-- ADD ROW -->
+                <div class="archive-add">
+                    <select value={ruleType} onchange={handleRuleType} class="archive-select">
+                        <option value="email">Email</option>
+                        <option value="keyword">Subject</option>
+                    </select>
+
+                    <input type="text"
+                        placeholder="e.g. ceo@company.com"
+                        value={ruleValue}
+                        oninput={handleRuleValue}/>
+
+                    <button class="archive-add-btn" onclick={addRule}>Add</button>
+                </div>
+
+                <!-- LIST BELOW -->
+                <div class="archive-list">
+                    <template if:true={rules.length}>
+                        <template for:each={rules} for:item="rule" for:index="index">
+                            <div key={rule.id} class="archive-item">
+
+                                <span class={rule.badgeClass}>
+                                    {rule.label}
+                                </span>
+
+                                <span class="archive-value">{rule.value}</span>
+
+                                <span class="archive-remove"
+                                    data-index={index}
+                                    onclick={removeBeforeRule}>
+                                    Remove
+                                </span>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+            </div>
+
+            <!-- DISCLAIMER -->
+            <div class="archive-disclaimer warning">
+                <span class="disclaimer-icon">⚠</span>
+                Once a rule is added and saved, it cannot be deleted. Please double-check the value before saving.
+            </div>
+
+            <div class="archive-footer">
+                <span class="archive-save-note">
+                    After saving, <strong>refresh the page</strong> once for changes to take effect.
+                </span>
+                <button class="archive-save"
+                        data-event="save"
+                        onclick={saveRules}
+                        disabled={isSaveDisabled}>
+                    Archived
+                </button>
+            </div>
+
+
+        </template>
+
+        <!-- ================= MANAGE RULE TAB ================= -->
+        <template if:true={isManageTab}>
+
+            <!-- SPINNER -->
+            <template if:true={isLoadingRules}>
+                <div class="archive-spinner">
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                </div>
+            </template>
+
+            <template if:false={isLoadingRules}>
+
+                <div class="archive-list">
+                    <template if:true={managerules.length}>
+                        <template for:each={managerules} for:item="rule" for:index="index">
+                            <div key={rule.id} class="archive-item">
+
+                                <span class={rule.badgeClass}>
+                                    {rule.label}
+                                </span>
+
+                                <span class="archive-value">{rule.value}</span>
+
+                                <span class="archive-remove"
+                                    data-event="delete"
+                                    data-index={index}
+                                    data-developername={rule.developername}
+                                    onclick={removeRule}>
+                                    Remove
+                                </span>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- EMPTY STATE -->
+                    <template if:false={managerules.length}>
+                        <div class="archive-item" style="justify-content:center; color:#9ca3af;">
+                            No rules added yet
+                        </div>
+                    </template>
+                </div>
+
+            </template>
+
+            <div class="archive-footer">    
+                <span class="archive-save-note">
+                    You can remove rules here before saving. Once saved, rules <strong>cannot be deleted</strong>.
+                </span>            
+                <button class="archive-save"
+                        data-event="save"
+                        onclick={handleUnarchived}
+                        >
+                    Unarchived
+                </button>
+            </div>
+
+
+        </template>
+
+        <!-- FOOTER -->
+        
+    </div>
+</template>
+
+</template>

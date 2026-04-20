@@ -1,0 +1,249 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="modal-backdrop">
+
+            <template if:true={showSpinner}>
+                <div class="exampleHolder">
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={showModalSpinner}>
+                <div class="exampleHolder">
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </div>
+            </template>
+           
+            <div class="modal">
+
+                <div class="modal-header">
+                    <h2>{headerLabel} {emailId}</h2>
+                    <span class="close" onclick={handleClose}>✖</span>
+                </div>
+
+                <template if:true={isCase}>
+                    <lightning-record-edit-form object-api-name="Case" density="comfy">
+
+                        <div class="slds-p-horizontal_large slds-p-top_large">
+
+                            <!-- ✅ FULL WIDTH -->
+                            <div class="slds-col slds-size_1-of-1">
+                                <lightning-input-field field-name="Subject" value={caseVariable.Subject}
+                                    onchange={handleCaseField} disabled={showfield}>
+                                </lightning-input-field>
+                            </div>
+
+                            <!-- ✅ FULL WIDTH -->
+                            <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
+                                <lightning-input-field field-name="Description" value={caseVariable.Description}
+                                    onchange={handleCaseField} disabled={showfield}>
+                                </lightning-input-field>
+                            </div>
+
+                            <!-- ✅ 2 COLUMN GRID START -->
+                            <div class="slds-grid slds-wrap slds-m-top_medium">
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                                    <lightning-input-field field-name="AccountId" onchange={handleCaseField} value={caseVariable.AccountId}
+                                        disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_medium">
+                                    <lightning-input-field field-name="ContactId" onchange={handleCaseField} value={caseVariable.ContactId}
+                                        disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                                    <lightning-input-field field-name="Contact_2__c" onchange={handleCaseField} value={caseVariable.Contact_2__c}
+                                        disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small">
+                                    <lightning-input-field field-name="Project1__c" value={caseVariable.Project1__c}
+                                        onchange={handleCaseField} disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small slds-m-top_medium">
+                                    <lightning-input-field field-name="Origin" value={caseVariable.Origin}
+                                        onchange={handleCaseField} disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small slds-m-top_medium">
+                                    <lightning-input-field field-name="Priority" value={caseVariable.Priority}
+                                        onchange={handleCaseField} disabled={showfield}>
+                                    </lightning-input-field>
+                                </div>
+
+                            </div>
+                            <!-- ✅ 2 COLUMN GRID END -->
+
+                        </div>
+
+                    </lightning-record-edit-form>
+
+                    <div class="modal-footer">
+                        <button onclick={handleClose}>Cancel</button>
+                        <button onclick={handleCase}>Case Submit</button>
+                    </div>
+
+                </template>
+
+
+
+
+                <template if:true={isOpportunity}>
+                    <lightning-record-edit-form object-api-name="Opportunity" density="comfy">
+
+                        <div class="slds-p-horizontal_large slds-p-top_large">
+
+                            <div class="slds-grid slds-wrap">
+
+                                <!-- Name -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                                    <lightning-input-field field-name="Name" onchange={handleOppField}
+                                        value={oppVariable.Name}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Close Date -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small">
+                                    <lightning-input-field field-name="CloseDate" value={oppVariable.CloseDate}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                                    <lightning-input-field field-name="AccountId" onchange={handleOppField}
+                                        value={oppVariable.AccountId}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Close Date -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small">
+                                    <lightning-input-field field-name="Key_Contact__c" value={oppVariable.Key_Contact__c}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Stage -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small slds-m-top_medium">
+                                    <lightning-input-field field-name="StageName" value={oppVariable.StageName}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Lead Source -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small slds-m-top_medium">
+                                    <lightning-input-field field-name="LeadSource" value={oppVariable.LeadSource}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Service -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-right_small slds-m-top_medium">
+                                    <lightning-input-field field-name="Service_Interested__c"
+                                        value={oppVariable.Service_Interested__c} onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Deal Type -->
+                                <div class="slds-col slds-size_1-of-2 slds-p-left_small slds-m-top_medium">
+                                    <lightning-input-field field-name="Deal_Type__c" value={oppVariable.Deal_Type__c}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                                <!-- Description FULL WIDTH -->
+                                <div class="slds-col slds-size_1-of-1 slds-m-top_medium">
+                                    <lightning-input-field field-name="Description" value={oppVariable.Description}
+                                        onchange={handleOppField}>
+                                    </lightning-input-field>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </lightning-record-edit-form>
+
+                    <div class="modal-footer">
+                        <button onclick={handleClose}>Cancel</button>
+                        <button onclick={handleOpportunity}>Opportunity Submit</button>
+                    </div>
+                </template>
+
+
+                <template if:true={isTask}>
+
+                    <div class="slds-p-horizontal_large slds-p-top_large">
+
+                        <div class="slds-grid slds-wrap">
+
+                            <!-- Subject -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-right_small">
+                                <lightning-input label="Subject" value={taskVariable.Subject} data-field="Subject"
+                                    onchange={handleTaskField}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Comment -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-left_small">
+                                <lightning-textarea label="Comment" value={taskVariable.Description}
+                                    data-field="Description" onchange={handleTaskField}>
+                                </lightning-textarea>
+                            </div>
+
+                            <!-- Due Date -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-right_small slds-m-top_medium">
+                                <lightning-input type="date" label="Due Date" value={taskVariable.ActivityDate}
+                                    data-field="ActivityDate" onchange={handleTaskField}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-left_small slds-m-top_medium">
+                                <lightning-combobox label="Priority" value={taskVariable.Priority}
+                                    options={priorityOptions} data-field="Priority" onchange={handleTaskField}>
+                                </lightning-combobox>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-right_small slds-m-top_medium">
+                                <lightning-combobox label="Status" value={taskVariable.Status} options={statusOptions}
+                                    data-field="Status" onchange={handleTaskField}>
+                                </lightning-combobox>
+                            </div>
+
+                            <!-- Assigned To -->
+                            <div class="slds-col slds-size_1-of-2 slds-p-left_small slds-m-top_medium">
+                                <lightning-record-picker label="Assigned To" object-api-name="User">
+                                </lightning-record-picker>
+                            </div>
+
+                            <!-- Reminder -->
+                            <div class="slds-col slds-size_1-of-2 slds-m-top_medium">
+                                <lightning-input type="datetime" label="Reminder Set"
+                                    value={taskVariable.ReminderDateTime} data-field="ReminderDateTime"
+                                    onchange={handleTaskField}>
+                                </lightning-input>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button onclick={handleClose}>Cancel</button>
+                        <button onclick={handleTask}>Task Submit</button>
+                    </div>
+
+                </template>
+
+            </div>
+        </div>
+    </template>
+</template>

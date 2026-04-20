@@ -1,0 +1,88 @@
+/* BACKDROP (already correct) */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: rgba(0,0,0,0.5);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* MODAL */
+.modal {
+    width: 500px;
+    max-height: 90vh; /* ✅ limit height */
+    background: white;
+    border-radius: 10px;
+	margin-top:5%;
+    display: flex;
+    flex-direction: column; /* important for scroll layout */
+    overflow: hidden; /* clean edges */
+}
+
+/* HEADER */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* BODY (SCROLL HERE) */
+.modal-body {
+    padding: 15px;
+    overflow-y: auto;   /* ✅ vertical scroll */
+    flex-grow: 1;       /* takes available space */
+    max-height: 50vh;   /* optional control */
+}
+
+/* FOOTER */
+.modal-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* CLOSE ICON */
+.close {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* 🔥 BUTTON STYLING */
+.modal-footer button {
+    padding: 6px 14px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* PRIMARY BUTTON */
+.modal-footer button:last-child {
+    background-color: #0176d3; /* Salesforce blue */
+    color: white;
+}
+
+.modal-footer button:last-child:hover {
+    background-color: #0250a3;
+}
+
+/* SECONDARY BUTTON */
+.modal-footer button:first-child {
+    background-color: #f3f3f3;
+    color: #333;
+}
+
+.modal-footer button:first-child:hover {
+    background-color: #e0e0e0;
+}

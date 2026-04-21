@@ -1,0 +1,138 @@
+<template>
+    <div class="overlay">
+        <div class="big-modal">
+
+            <!-- HEADER -->
+            <div class="big-header">
+                <span>New Message</span>
+                <div class="header-icons">
+                    <span class="icon-btn" title="Restore normal size" onclick={handleClose}>&#9723;</span>
+                    <span class="icon-btn close" title="Close" onclick={handleClose}>✖</span>
+                </div>
+            </div>
+
+            <!-- FIELDS -->
+            <div class="big-fields">
+                <input class="big-input" type="text" placeholder="To"
+                    value={localData.to}
+                    data-field="to"
+                    onchange={handleInput}/>
+
+                <div class="cc-bcc-row">
+                    <input class="big-input" type="text" placeholder="CC"
+                        value={localData.cc}
+                        data-field="cc"
+                        onchange={handleInput}/>
+                    <input class="big-input" type="text" placeholder="BCC"
+                        value={localData.bcc}
+                        data-field="bcc"
+                        onchange={handleInput}/>
+                </div>
+
+                <input class="big-input" type="text" placeholder="Subject"
+                    value={localData.subject}
+                    data-field="subject"
+                    onchange={handleInput}/>
+            </div>
+
+            <!-- BODY — custom rich editor -->
+            <div class="big-body">
+                <div class="editor-container">
+
+                    <!-- TOOLBAR -->
+                    <div class="toolbar">
+
+                        <!-- Font Size -->
+                        <select onchange={setFontSize}>
+                            <option value="1">Small</option>
+                            <option value="3" selected>Normal</option>
+                            <option value="5">Large</option>
+                        </select>
+
+                        <!-- Format -->
+                        <button class="tb-btn" onclick={bold} title="Bold"><b>B</b></button>
+                        <button class="tb-btn" onclick={italic} title="Italic"><i>I</i></button>
+                        <button class="tb-btn" onclick={underline} title="Underline"><u>U</u></button>
+                        <button class="tb-btn strike-btn" onclick={strike} title="Strikethrough">S</button>
+
+                        <span class="tb-divider"></span>
+
+                        <!-- Align -->
+                        <button class="tb-btn" onclick={alignLeft} title="Align Left">
+                            <span class="align-icon">&#8676;</span>
+                        </button>
+                        <button class="tb-btn" onclick={alignCenter} title="Align Center">
+                            <span class="align-icon">&#8700;</span>
+                        </button>
+                        <button class="tb-btn" onclick={alignRight} title="Align Right">
+                            <span class="align-icon">&#8677;</span>
+                        </button>
+
+                        <span class="tb-divider"></span>
+
+                        <!-- Link -->
+                        <button class="tb-btn" onclick={addLink} title="Insert Link">&#128279;</button>
+
+                        <!-- Image Upload -->
+                        <label class="tb-btn img-label" title="Insert Image">
+                            &#128247;
+                            <input type="file" accept="image/*" onchange={uploadImage} style="display:none"/>
+                        </label>
+
+                        <!-- Clear Formatting -->
+                        <button class="tb-btn" onclick={clearFormat} title="Clear Formatting">&#10005; Clear</button>
+
+                    </div>
+
+                    <!-- EDITABLE AREA -->
+                    <div class="editor"
+                        contenteditable="true"
+                        data-field="body"
+                        oninput={handleBodyInput}>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ATTACHMENTS -->
+            <div class="big-attachment">
+                <h4>Attachments</h4>
+                <div class="attach-box">
+                    <ul class="slds-list_horizontal slds-wrap">
+                        <template for:each={localFiles} for:item="file" for:index="index">
+                            <li key={file.name} class="pill-wrapper">
+                                <lightning-pill
+                                    label={file.name}
+                                    title={file.name}
+                                    data-index={index}
+                                    onremove={handleRemoveFile}>
+                                    <lightning-icon icon-name={file.icon}></lightning-icon>
+                                </lightning-pill>
+                            </li>
+                        </template>
+                    </ul>
+                    <input type="file" multiple onchange={handleFileChange}/>
+                </div>
+                <p class="attach-note">* Maximum 5 files allowed.</p>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="big-footer">
+                <button class="discard-btn" onclick={handleClose}>Discard</button>
+                <div class="template-dropdown">
+                                                        <select onchange={handleTemplateChange}>
+                                                            <option value="">Add Template</option>
+
+                                                            <template for:each={templateOptions} for:item="temp">
+                                                                <option key={temp.value} value={temp.value}>
+                                                                    {temp.label}
+                                                                </option>
+                                                            </template>
+                                                        </select>
+                                                    </div>
+                <button class="send-btn" onclick={handleSend}>Send</button>
+            </div>
+
+        </div>
+    </div>
+</template>
